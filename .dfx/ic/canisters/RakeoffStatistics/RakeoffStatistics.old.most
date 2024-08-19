@@ -27,7 +27,7 @@ type HttpResponse__3 =
   };
 type HttpResponse__4 = HttpResponse__3;
 type Key__2 = Text;
-type RakeoffStats = {icp_stats : Stats};
+type ROStats = {icp_stats : Stats};
 type StableAsset = {contentType : Text; encodings : [(Text, AssetEncoding)]};
 type StableAsset__1 = StableAsset;
 type Stats =
@@ -54,7 +54,7 @@ type Time__1 = Int;
 type Token = {arbitrary_data : Text};
 actor {
   stable var _apiKey : Text;
-  stable var _rakeoffStats : ?RakeoffStats;
+  stable var _ROStats : ?ROStats;
   stable var _refreshTimerId : Nat;
   stable var _userStakedIcpStorage : [(Principal, Nat64)];
   stable var serializedEntries :

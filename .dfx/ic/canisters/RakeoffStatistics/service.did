@@ -17,19 +17,19 @@ type HttpResponse = record {
   streaming_strategy : opt StreamingStrategy;
   status_code : nat16;
 };
-type RakeoffStatistics = service {
+type ROStatistics = service {
   controller_clear_server_cache : () -> ();
   controller_get_api_key : () -> (Result_1);
   controller_get_refresh_timer : () -> (Result_2);
   controller_set_api_key : (text) -> (Result_1);
   controller_set_refresh_timer : () -> (Result_1);
   controller_update_cached_stats : () -> ();
-  get_rakeoff_stats : () -> (opt RakeoffStats) query;
+  get_RO_stats : () -> (opt ROStats) query;
   http_request : (HttpRequest) -> (HttpResponse) query;
   http_request_update : (HttpRequest) -> (HttpResponse);
   track_user_staked_amount : (text, nat64) -> (Result);
 };
-type RakeoffStats = record { icp_stats : Stats };
+type ROStats = record { icp_stats : Stats };
 type Result = variant { ok; err };
 type Result_1 = variant { ok : text; err };
 type Result_2 = variant { ok : nat; err };
@@ -56,4 +56,4 @@ type StreamingCallbackHttpResponse = record {
 };
 type StreamingStrategy = variant { Callback : CallbackStrategy };
 type Token = record { arbitrary_data : text };
-service : RakeoffStatistics
+service : ROStatistics

@@ -22,7 +22,7 @@ export const idlFactory = ({ IDL }) => {
     'average_per_pool' : IDL.Nat64,
     'total_pools_successfully_completed' : IDL.Nat,
   });
-  const RakeoffStats = IDL.Record({ 'icp_stats' : Stats });
+  const ROStats = IDL.Record({ 'icp_stats' : Stats });
   const HeaderField = IDL.Tuple(IDL.Text, IDL.Text);
   const HttpRequest = IDL.Record({
     'url' : IDL.Text,
@@ -48,18 +48,18 @@ export const idlFactory = ({ IDL }) => {
     'status_code' : IDL.Nat16,
   });
   const Result = IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Null });
-  const RakeoffStatistics = IDL.Service({
+  const ROStatistics = IDL.Service({
     'controller_clear_server_cache' : IDL.Func([], [], []),
     'controller_get_api_key' : IDL.Func([], [Result_1], []),
     'controller_get_refresh_timer' : IDL.Func([], [Result_2], []),
     'controller_set_api_key' : IDL.Func([IDL.Text], [Result_1], []),
     'controller_set_refresh_timer' : IDL.Func([], [Result_1], []),
     'controller_update_cached_stats' : IDL.Func([], [], []),
-    'get_rakeoff_stats' : IDL.Func([], [IDL.Opt(RakeoffStats)], ['query']),
+    'get_RO_stats' : IDL.Func([], [IDL.Opt(ROStats)], ['query']),
     'http_request' : IDL.Func([HttpRequest], [HttpResponse], ['query']),
     'http_request_update' : IDL.Func([HttpRequest], [HttpResponse], []),
     'track_user_staked_amount' : IDL.Func([IDL.Text, IDL.Nat64], [Result], []),
   });
-  return RakeoffStatistics;
+  return ROStatistics;
 };
 export const init = ({ IDL }) => { return []; };

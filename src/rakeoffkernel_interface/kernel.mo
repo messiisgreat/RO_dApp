@@ -36,7 +36,7 @@ module {
     timerId : Nat;
   };
   public type ProcessWinnerResult = { #ok : (Text, Nat64); #err : Text };
-  public type RakeoffPools = {
+  public type ROPools = {
     icp_pool : PoolRecord;
     pool_history : [?PoolHistoryRecord];
   };
@@ -84,7 +84,7 @@ module {
     controller_init_pool_timer : shared Text -> async Result_5;
     deposit_icp_pool : shared Nat64 -> async Result_4;
     get_canister_stats : shared query () -> async CanisterStats;
-    get_rakeoff_pools : shared query () -> async RakeoffPools;
+    get_RO_pools : shared query () -> async ROPools;
     get_wallet_info : shared () -> async Result_3;
     update_disbursed_icp_fee : shared Nat64 -> async Result_2;
     withdraw_ckbtc : shared (Nat, Text) -> async Result_1;

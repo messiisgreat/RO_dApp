@@ -1,6 +1,6 @@
 {
   "canisters": {
-    "RakeoffStatistics": {
+    "ROStatistics": {
       "main": "src/statistics.mo",
       "type": "motoko"
     }

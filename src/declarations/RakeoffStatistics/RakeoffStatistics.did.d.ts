@@ -20,19 +20,19 @@ export interface HttpResponse {
   'streaming_strategy' : [] | [StreamingStrategy],
   'status_code' : number,
 }
-export interface RakeoffStatistics {
+export interface ROStatistics {
   'controller_clear_server_cache' : ActorMethod<[], undefined>,
   'controller_get_api_key' : ActorMethod<[], Result_1>,
   'controller_get_refresh_timer' : ActorMethod<[], Result_2>,
   'controller_set_api_key' : ActorMethod<[string], Result_1>,
   'controller_set_refresh_timer' : ActorMethod<[], Result_1>,
   'controller_update_cached_stats' : ActorMethod<[], undefined>,
-  'get_rakeoff_stats' : ActorMethod<[], [] | [RakeoffStats]>,
+  'get_RO_stats' : ActorMethod<[], [] | [ROStats]>,
   'http_request' : ActorMethod<[HttpRequest], HttpResponse>,
   'http_request_update' : ActorMethod<[HttpRequest], HttpResponse>,
   'track_user_staked_amount' : ActorMethod<[string, bigint], Result>,
 }
-export interface RakeoffStats { 'icp_stats' : Stats }
+export interface ROStats { 'icp_stats' : Stats }
 export type Result = { 'ok' : null } |
   { 'err' : null };
 export type Result_1 = { 'ok' : string } |
@@ -62,4 +62,4 @@ export interface StreamingCallbackHttpResponse {
 }
 export type StreamingStrategy = { 'Callback' : CallbackStrategy };
 export interface Token { 'arbitrary_data' : string }
-export interface _SERVICE extends RakeoffStatistics {}
+export interface _SERVICE extends ROStatistics {}

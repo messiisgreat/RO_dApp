@@ -1,5 +1,5 @@
-import RakeoffKernelInterface "./rakeoffkernel_interface/kernel";
-import RakeoffAchievementsInterface "./rakeoffachievements_interface/achievements";
+import ROKernelInterface "./ROkernel_interface/kernel";
+import ROAchievementsInterface "./ROachievements_interface/achievements";
 import HashMap "mo:base/HashMap";
 import Array "mo:base/Array";
 import Iter "mo:base/Iter";
@@ -11,19 +11,19 @@ import Text "mo:base/Text";
 import Timer "mo:base/Timer";
 import Server "mo:server";
 
-// Welcome to the RakeoffStatistics smart contract.
-// This smart contract is built to track some important stats about the Rakeoff dApp
-shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
+// Welcome to the ROStatistics smart contract.
+// This smart contract is built to track some important stats about the RO dApp
+shared ({ caller = owner }) actor class ROStatistics() = thisCanister {
 
   /////////////////
   // Constants ////
   /////////////////
 
-  // RakeoffKernel canister
-  let RakeoffKernel = actor "rktkb-jiaaa-aaaap-aa23a-cai" : RakeoffKernelInterface.Self;
+  // ROKernel canister
+  let ROKernel = actor "rktkb-jiaaa-aaaap-aa23a-cai" : ROKernelInterface.Self;
 
-  // RakeoffKernel canister
-  let RakeoffAchievements = actor "4llet-lqaaa-aaaai-qpbkq-cai" : RakeoffAchievementsInterface.Self;
+  // ROKernel canister
+  let ROAchievements = actor "4llet-lqaaa-aaaai-qpbkq-cai" : ROAchievementsInterface.Self;
 
   // API version
   let API_VERSION : Text = "v1";
@@ -58,7 +58,7 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
     fees_from_disbursement : Nat64; // from kernel
   };
 
-  public type RakeoffStats = {
+  public type ROStats = {
     icp_stats : Stats;
   };
 
@@ -66,8 +66,8 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
   // Canister State ////
   //////////////////////
 
-  // stable variable of all Rakeoff stats - cached
-  private stable var _rakeoffStats : ?RakeoffStats = null;
+  // stable variable of all RO stats - cached
+  private stable var _ROStats : ?ROStats = null;
 
   // api key (secret)
   private stable var _apiKey : Text = "";
@@ -112,8 +112,8 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
     return trackUserStakedAmount(key, caller, totalStakedIcp);
   };
 
-  public query func get_rakeoff_stats() : async ?RakeoffStats {
-    return getRakeoffStats();
+  public query func get_RO_stats() : async ?ROStats {
+    return getROStats();
   };
 
   public query func http_request(req : Server.HttpRequest) : async Server.HttpResponse {
@@ -168,16 +168,16 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
     };
   };
 
-  private func getRakeoffStats() : ?RakeoffStats {
-    switch (_rakeoffStats) {
-      case (?_rakeoffStats) {
-        return ?_rakeoffStats;
+  private func getROStats() : ?ROStats {
+    switch (_ROStats) {
+      case (?_ROStats) {
+        return ?_ROStats;
       };
       case (null) {
         return null;
       };
     };
-    return _rakeoffStats;
+    return _ROStats;
   };
 
   //////////////////////////////
@@ -214,12 +214,12 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
 
   private func updateCachedStats() : async () {
     switch (
-      await RakeoffAchievements.get_canister_stats(),
-      await RakeoffKernel.get_rakeoff_pools(),
-      await RakeoffKernel.get_canister_stats(),
+      await ROAchievements.get_canister_stats(),
+      await ROKernel.get_RO_pools(),
+      await ROKernel.get_canister_stats(),
     ) {
       case (#ok achievementStats, kernelPools, kernelStats) {
-        _rakeoffStats := ?{
+        _ROStats := ?{
           icp_stats = {
             total_stakers = tallyTotalStakers();
             total_staked = tallyTotalStakedAmount();
@@ -249,7 +249,7 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
   // Private Helper Functions ///
   ///////////////////////////////
 
-  // Purpose: Calculate the total number of ICP stakers on Rakeoff.
+  // Purpose: Calculate the total number of ICP stakers on RO.
   // Returns: Total number of stakers as a Nat.
   private func tallyTotalStakers() : Nat {
     var totalStakers = 0;
@@ -276,37 +276,37 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
   };
 
   // Purpose: Retrieve the total ICP claimed from the ICP bonus achievements canister.
-  // Parameters: achievementStats - RakeoffAchievementsInterface.CanisterStats object.
+  // Parameters: achievementStats - ROAchievementsInterface.CanisterStats object.
   // Returns: Total ICP claimed as a Nat64.
-  private func getIcpClaimedFromAchievements(achievementStats : RakeoffAchievementsInterface.CanisterStats) : Nat64 {
+  private func getIcpClaimedFromAchievements(achievementStats : ROAchievementsInterface.CanisterStats) : Nat64 {
     return achievementStats.icp_claimed;
   };
 
   // Purpose: Get the total count of neurons (batches of staked ICP) from the ICP bonus achievements canister.
-  // Parameters: achievementStats - RakeoffAchievementsInterface.CanisterStats object.
+  // Parameters: achievementStats - ROAchievementsInterface.CanisterStats object.
   // Returns: Total neuron count as a Nat.
-  private func getTotalNeuronsInAchievements(achievementStats : RakeoffAchievementsInterface.CanisterStats) : Nat {
+  private func getTotalNeuronsInAchievements(achievementStats : ROAchievementsInterface.CanisterStats) : Nat {
     return achievementStats.total_neurons_added;
   };
 
   // Purpose: Calculate the total ICP fees collected, based on the kernel stats.
-  // Parameters: kernelStats - RakeoffKernelInterface.CanisterStats object.
+  // Parameters: kernelStats - ROKernelInterface.CanisterStats object.
   // Returns: Total ICP fees collected as a Nat64.
-  private func totalIcpFeesCollected(kernelStats : RakeoffKernelInterface.CanisterStats) : Nat64 {
+  private func totalIcpFeesCollected(kernelStats : ROKernelInterface.CanisterStats) : Nat64 {
     return kernelStats.icp_fees_collected;
   };
 
   // Purpose: Compute the total ICP fees earned from ICP disbursement.
-  // Parameters: kernelStats - RakeoffKernelInterface.CanisterStats object.
+  // Parameters: kernelStats - ROKernelInterface.CanisterStats object.
   // Returns: Total ICP fees from disbursement as a Nat64.
-  private func totalIcpFeesFromIcpDisbursement(kernelStats : RakeoffKernelInterface.CanisterStats) : Nat64 {
+  private func totalIcpFeesFromIcpDisbursement(kernelStats : ROKernelInterface.CanisterStats) : Nat64 {
     return kernelStats.icp_earned_from_disbursement;
   };
 
-  // Purpose: Determine the total amount of ICP disbursed to winners from the RakeoffKernel.
-  // Parameters: kernelPools - RakeoffKernelInterface.RakeoffPools object.
+  // Purpose: Determine the total amount of ICP disbursed to winners from the ROKernel.
+  // Parameters: kernelPools - ROKernelInterface.ROPools object.
   // Returns: Total ICP rewarded as a Nat64.
-  private func tallyTotalIcpRewarded(kernelPools : RakeoffKernelInterface.RakeoffPools) : Nat64 {
+  private func tallyTotalIcpRewarded(kernelPools : ROKernelInterface.ROPools) : Nat64 {
     var totalPrizes : Nat64 = 0;
 
     for (pool in kernelPools.pool_history.vals()) {
@@ -322,9 +322,9 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
   };
 
   // Purpose: Count the total number of winners processed successfully.
-  // Parameters: kernelPools - RakeoffKernelInterface.RakeoffPools object.
+  // Parameters: kernelPools - ROKernelInterface.ROPools object.
   // Returns: Total number of processed winners as a Nat.
-  private func tallyTotalWinnersProcessed(kernelPools : RakeoffKernelInterface.RakeoffPools) : Nat {
+  private func tallyTotalWinnersProcessed(kernelPools : ROKernelInterface.ROPools) : Nat {
     var totalWinners = 0;
     for (pool in kernelPools.pool_history.vals()) {
       switch (pool) {
@@ -346,9 +346,9 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
   };
 
   // Purpose: Count the total number of processing failures for winners' transfers.
-  // Parameters: kernelPools - RakeoffKernelInterface.RakeoffPools object.
+  // Parameters: kernelPools - ROKernelInterface.ROPools object.
   // Returns: Total number of processing failures as a Nat.
-  private func tallyTotalWinnersProcessingFailures(kernelPools : RakeoffKernelInterface.RakeoffPools) : Nat {
+  private func tallyTotalWinnersProcessingFailures(kernelPools : ROKernelInterface.ROPools) : Nat {
     var totalFailures = 0;
     for (pool in kernelPools.pool_history.vals()) {
       switch (pool) {
@@ -369,10 +369,10 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
     return totalFailures;
   };
 
-  // Purpose: Calculate the total number of ICP pools from RakeoffKernel with all transfers successful.
-  // Parameters: kernelPools - RakeoffKernelInterface.RakeoffPools object.
+  // Purpose: Calculate the total number of ICP pools from ROKernel with all transfers successful.
+  // Parameters: kernelPools - ROKernelInterface.ROPools object.
   // Returns: Total number of successful ICP pools as a Nat.
-  private func tallyTotalSuccessfulPool(kernelPools : RakeoffKernelInterface.RakeoffPools) : Nat {
+  private func tallyTotalSuccessfulPool(kernelPools : ROKernelInterface.ROPools) : Nat {
     var totalSuccesses = 0;
     for (pool in kernelPools.pool_history.vals()) {
       switch (pool) {
@@ -389,9 +389,9 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
   };
 
   // Purpose: Compute the average ICP win amount from the pools.
-  // Parameters: kernelPools - RakeoffKernelInterface.RakeoffPools object.
+  // Parameters: kernelPools - ROKernelInterface.ROPools object.
   // Returns: Average ICP win amount as a Nat64.
-  private func calculateAverageIcpWinAmount(kernelPools : RakeoffKernelInterface.RakeoffPools) : Nat64 {
+  private func calculateAverageIcpWinAmount(kernelPools : ROKernelInterface.ROPools) : Nat64 {
     let totalRewarded = tallyTotalIcpRewarded(kernelPools);
     let winnersCount = tallyTotalWinnersProcessed(kernelPools);
 
@@ -404,9 +404,9 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
   };
 
   // Purpose: Calculate the average ICP amount per pool.
-  // Parameters: kernelPools - RakeoffKernelInterface.RakeoffPools object.
+  // Parameters: kernelPools - ROKernelInterface.ROPools object.
   // Returns: Average ICP per pool as a Nat64.
-  private func calculateAverageIcpPerPool(kernelPools : RakeoffKernelInterface.RakeoffPools) : Nat64 {
+  private func calculateAverageIcpPerPool(kernelPools : ROKernelInterface.ROPools) : Nat64 {
     let totalRewarded = tallyTotalIcpRewarded(kernelPools);
     let poolCount = kernelPools.pool_history.size();
 
@@ -419,9 +419,9 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
   };
 
   // Purpose: Identify the highest amount of ICP that was deposited in a single pool.
-  // Parameters: kernelPools - RakeoffKernelInterface.RakeoffPools object.
+  // Parameters: kernelPools - ROKernelInterface.ROPools object.
   // Returns: Highest ICP pool amount as a Nat64.
-  private func getHighestIcpPoolAmount(kernelPools : RakeoffKernelInterface.RakeoffPools) : Nat64 {
+  private func getHighestIcpPoolAmount(kernelPools : ROKernelInterface.ROPools) : Nat64 {
     var highestAmount : Nat64 = 0;
     for (pool in kernelPools.pool_history.vals()) {
       switch (pool) {
@@ -438,9 +438,9 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
   };
 
   // Purpose: Determine the highest winning amount of ICP from the pools.
-  // Parameters: kernelPools - RakeoffKernelInterface.RakeoffPools object.
+  // Parameters: kernelPools - ROKernelInterface.ROPools object.
   // Returns: Highest ICP win amount as a Nat64.
-  private func getHighestIcpWinAmount(kernelPools : RakeoffKernelInterface.RakeoffPools) : Nat64 {
+  private func getHighestIcpWinAmount(kernelPools : ROKernelInterface.ROPools) : Nat64 {
     var highestAmount : Nat64 = 0;
     for (pool in kernelPools.pool_history.vals()) {
       switch (pool) {
@@ -464,12 +464,12 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
   };
 
   // Purpose: Create a chart data array showing pool history with timestamp and amount.
-  // Parameters: kernelPools - RakeoffKernelInterface.RakeoffPools object.
+  // Parameters: kernelPools - ROKernelInterface.ROPools object.
   // Returns: An array of HistoryChartData containing timestamp and amount for each pool record.
-  private func getPoolHistoryChartData(kernelPools : RakeoffKernelInterface.RakeoffPools) : [HistoryChartData] {
+  private func getPoolHistoryChartData(kernelPools : ROKernelInterface.ROPools) : [HistoryChartData] {
     let historyChartData = Array.mapFilter(
       kernelPools.pool_history,
-      func(x : ?RakeoffKernelInterface.PoolHistoryRecord) : ?HistoryChartData {
+      func(x : ?ROKernelInterface.PoolHistoryRecord) : ?HistoryChartData {
         switch (x) {
           case (?historyRecord) {
             ?{
@@ -511,26 +511,26 @@ shared ({ caller = owner }) actor class RakeoffStatistics() = thisCanister {
   ///////////////////////////
 
   server.get(
-    "/" # API_VERSION # "/rakeoff-stats",
+    "/" # API_VERSION # "/RO-stats",
     func(req, res) : Server.Response {
-      switch (_rakeoffStats) {
-        case (?_rakeoffStats) {
+      switch (_ROStats) {
+        case (?_ROStats) {
           var json = "{ \"icp_stats\": {" #
-          "\"total_stakers\": " # Nat.toText(_rakeoffStats.icp_stats.total_stakers) # ", " #
-          "\"total_staked\": " # Nat64.toText(_rakeoffStats.icp_stats.total_staked) # ", " #
-          "\"claimed_from_achievements\": " # Nat64.toText(_rakeoffStats.icp_stats.claimed_from_achievements) # ", " #
-          "\"total_neurons_in_achievements\": " # Nat.toText(_rakeoffStats.icp_stats.total_neurons_in_achievements) # ", " #
-          "\"total_rewarded\": " # Nat64.toText(_rakeoffStats.icp_stats.total_rewarded) # ", " #
-          "\"average_win_amount\": " # Nat64.toText(_rakeoffStats.icp_stats.average_win_amount) # ", " #
-          "\"highest_win_amount\": " # Nat64.toText(_rakeoffStats.icp_stats.highest_win_amount) # ", " #
-          "\"average_per_pool\": " # Nat64.toText(_rakeoffStats.icp_stats.average_per_pool) # ", " #
-          "\"highest_pool\": " # Nat64.toText(_rakeoffStats.icp_stats.highest_pool) # ", " #
-          "\"total_pools_successfully_completed\": " # Nat.toText(_rakeoffStats.icp_stats.total_pools_successfully_completed) # ", " #
-          "\"total_winners_processed\": " # Nat.toText(_rakeoffStats.icp_stats.total_winners_processed) # ", " #
-          "\"total_winner_processing_failures\": " # Nat.toText(_rakeoffStats.icp_stats.total_winner_processing_failures) # ", " #
-          "\"pool_history_chart_data\": " # poolHistoryToJson(_rakeoffStats.icp_stats.pool_history_chart_data) # ", " #
-          "\"fees_collected\": " # Nat64.toText(_rakeoffStats.icp_stats.fees_collected) # ", " #
-          "\"fees_from_disbursement\": " # Nat64.toText(_rakeoffStats.icp_stats.fees_from_disbursement) #
+          "\"total_stakers\": " # Nat.toText(_ROStats.icp_stats.total_stakers) # ", " #
+          "\"total_staked\": " # Nat64.toText(_ROStats.icp_stats.total_staked) # ", " #
+          "\"claimed_from_achievements\": " # Nat64.toText(_ROStats.icp_stats.claimed_from_achievements) # ", " #
+          "\"total_neurons_in_achievements\": " # Nat.toText(_ROStats.icp_stats.total_neurons_in_achievements) # ", " #
+          "\"total_rewarded\": " # Nat64.toText(_ROStats.icp_stats.total_rewarded) # ", " #
+          "\"average_win_amount\": " # Nat64.toText(_ROStats.icp_stats.average_win_amount) # ", " #
+          "\"highest_win_amount\": " # Nat64.toText(_ROStats.icp_stats.highest_win_amount) # ", " #
+          "\"average_per_pool\": " # Nat64.toText(_ROStats.icp_stats.average_per_pool) # ", " #
+          "\"highest_pool\": " # Nat64.toText(_ROStats.icp_stats.highest_pool) # ", " #
+          "\"total_pools_successfully_completed\": " # Nat.toText(_ROStats.icp_stats.total_pools_successfully_completed) # ", " #
+          "\"total_winners_processed\": " # Nat.toText(_ROStats.icp_stats.total_winners_processed) # ", " #
+          "\"total_winner_processing_failures\": " # Nat.toText(_ROStats.icp_stats.total_winner_processing_failures) # ", " #
+          "\"pool_history_chart_data\": " # poolHistoryToJson(_ROStats.icp_stats.pool_history_chart_data) # ", " #
+          "\"fees_collected\": " # Nat64.toText(_ROStats.icp_stats.fees_collected) # ", " #
+          "\"fees_from_disbursement\": " # Nat64.toText(_ROStats.icp_stats.fees_from_disbursement) #
           " }}";
 
           return res.json({
